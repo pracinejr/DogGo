@@ -428,3 +428,4 @@ C:\Users\Peter\workspace\DogGo\DogGo\obj\Debug\net5.0\Razor\Views\Walkers\Detail
 C:\Users\Peter\workspace\DogGo\DogGo\obj\Debug\net5.0\Razor\Views\Owners\Index.cshtml.g.cs
 C:\Users\Peter\workspace\DogGo\DogGo\obj\Debug\net5.0\Razor\Views\Owners\Details.cshtml.g.cs
 C:\Users\Peter\workspace\DogGo\DogGo\obj\Debug\net5.0\Razor\Views\Owners\Create.cshtml.g.cs
+C:\Users\Peter\workspace\DogGo\DogGo\obj\Debug\net5.0\Razor\Views\Owners\Edit.cshtml.g.cs
