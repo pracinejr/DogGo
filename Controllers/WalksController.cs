@@ -4,11 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DogGo.Repositories;
+using DogGo.Models;
+using DogGo.Models.ViewModels;
 
 namespace DogGo.Controllers
 {
     public class WalksController : Controller
     {
+
         // GET: WalksController
         public ActionResult Index()
         {

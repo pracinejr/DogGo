@@ -120,7 +120,7 @@ namespace DogGo.Repositories
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                        SELECT o.Id, o.[Name], o.Email, o.Address, o.Phone, o.NeighborhoodId, n.neighborhoodId, n.neighborhoodName
+                        SELECT o.Id, o.[Name], o.Email, o.Address, o.Phone, o.NeighborhoodId, n.Id, n.Name
                         FROM Owner o
                         LEFT JOIN Neighborhood n ON o.NeighborhoodId = n.Id
                         WHERE o.Email = @email";
@@ -141,8 +141,8 @@ namespace DogGo.Repositories
                             NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId")),
                             Neighborhood = new Neighborhood()
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("neighborhoodId")),
-                                Name = reader.GetString(reader.GetOrdinal("neighborhoodName"))
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name"))
                             }
                         };
 

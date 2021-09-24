@@ -1,112 +1,86 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using DogGo.Models;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DogGo.Models;
-using DogGo.Repositories;
-using DogGo.Models.ViewModels;
 
-namespace DogGo.Controllers
+namespace DogGo.Repositories
 {
-
-    public class WalksController : Controller
+    public class WalksRepository : IWalksRepository
     {
-        private readonly IWalksRepository _walksRepo;
-        private readonly IOwnerRepository _ownerRepo;
-        private readonly IDogRepository _dogRepo;
-        private readonly IWalkerRepository _walkerRepo;
+        private readonly IConfiguration _config;
 
-        public WalksController(IWalksRepository walksRepository, IOwnerRepository ownerRepository,
-    IDogRepository dogRepository,
-    IWalkerRepository walkerRepository)
+        public WalksRepository(IConfiguration config)
         {
-            _walksRepo = walksRepository;
-            _ownerRepo = ownerRepository;
-            _walkerRepo = walkerRepository;
-            _dogRepo = dogRepository;
+            _config = config;
         }
 
-        // GET: WalksControler
-        public ActionResult Index()
+        public SqlConnection Connection
         {
-            List<Walks> walks = _walksRepo.GetAllWalks();
-            WalksDetailViewModel vm = new WalksDetailViewModel()
+            get
             {
-                Owner = new Owner(),
-                Dog = new Dog(),
-                Walker = new Walker(),
-            };
-            return View(vm);
-        }
-
-        // GET: WalksControler/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: WalksControler/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: WalksControler/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
             }
         }
 
-        // GET: WalksControler/Edit/5
-        public ActionResult Edit(int id)
+        public List<Walks> GetAllWalks()
         {
-            return View();
-        }
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                      SELECT w.Id, w.Date, w.Duration, w.WalkerId, w.DogId ,wk.Name as walkerName, d.Name as dogName, o.Name AS ownerName, o.Id AS ownerId
+                      FROM Walks w Left JOIN Walker wk  ON w.WalkerId = wk.Id Left Join Dog d ON w.DogId = d.Id Left JOIN Owner o ON o.Id = d.OwnerId
+                    ";
 
-        // POST: WalksControler/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: WalksControler/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-        // POST: WalksControler/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                    List<Walks> walks = new List<Walks>();
+
+                    while (reader.Read())
+                    {
+                        Walks walk = new Walks
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Date = reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Duration = reader.GetInt32(reader.GetOrdinal("Duration")),
+                            WalkerId = reader.GetInt32(reader.GetOrdinal("WalkerId")),
+                            DogId = reader.GetInt32(reader.GetOrdinal("DogId"))
+                        };
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("WalkerId")))
+                        {
+                            walk.Walker = new Walker
+                            {
+                                Name = reader.GetString(reader.GetOrdinal("walkerName"))
+                            };
+                        }
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("DogId")))
+                        {
+                            walk.Dog = new Dog()
+                            {
+                                Name = reader.GetString(reader.GetOrdinal("dogName"))
+                            };
+                        }
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("ownerName")))
+                        {
+                            walk.Owner = new Owner()
+                            {
+                                Name = reader.GetString(reader.GetOrdinal("ownerName"))
+                            };
+                        }
+
+                        walks.Add(walk);
+                    }
+
+                    reader.Close();
+
+                    return walks;
+                }
             }
         }
     }
