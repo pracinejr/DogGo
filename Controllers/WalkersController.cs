@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DogGo.Models.ViewModels;
 
 
 namespace DogGo.Controllers 
@@ -20,7 +21,7 @@ namespace DogGo.Controllers
         {
             _walkerRepo = walkerRepository;
         }
-
+        
         // GET: WalkersController
         // GET: Walkers
         public ActionResult Index()
